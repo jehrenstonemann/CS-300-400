@@ -1,0 +1,16 @@
+graph UWCampus {
+  FedEx -- CSBuilding [ label = "1287" ]
+  FedEx -- Grainger [ label = "966" ]
+  FedEx -- ChemistryBuilding [ label = "1430" ]
+  Sterling -- VanVleck [ label = "80" ]
+  Chamberlin -- Sterling [ label = "60" ]
+  Grainger -- ChemistryBuilding [ label = "373" ]
+  VanHise -- VanVleck [ label = "120" ]
+  Chamberlin -- VanHise [ label = "200" ]
+  ChemistryBuilding -- VanHise [ label = "482" ]
+  CSBuilding -- Grainger [ label = "400" ]
+  CSBuilding -- ChemistryBuilding [ label = "350" ]
+  VanHise -- FedEx [ label = "1470" ]
+  Chamberlin -- ChemistryBuilding [ label = "32" ]
+  VanVleck -- ChemistryBuilding [ label = "180" ]
+}
