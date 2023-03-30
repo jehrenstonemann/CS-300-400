@@ -1,0 +1,458 @@
+; Your Name: Huang Xiangyu
+; Partner's Name (if any): Wu Chengjun
+; (Both partner's must also submit a partners.txt file.)
+; Date: 2022/5/6
+;
+; Mark the boxes below [ ] by replacing the space with an X as in [X]
+;
+; [X] I/we certify that the code herein is my/our own authorship - 
+;     I/we have not used anyone else's code (in whole of in part) for
+;     my/our modifications, and I/we have not shared my/our code in 
+;     any form with anyone else.
+;
+; Complete the subroutines in the following order.
+; Mark which subroutine(s) you've successfully completed.
+; [X] 1. subroutine MUL3ADD1 completed
+; [X] 2. subroutine DIVIDEBY2 completed
+; [X] 3. subroutine COLLATZ_STEPS completed
+;
+; -----------------------------------------------------
+; Copyright (c) 2022 Jim Skrentny - All Rights Reserved
+; Posting this publicly is prohibited.
+; -----------------------------------------------------
+;
+    .ORIG    x3000
+    BRnzp TEST_BEGIN
+;
+; STEP 1: MUL3ADD1
+; ****************
+; Subroutine that multiplies a positive integer A by 3 adds 1 to it.
+;
+; arguments:    in R0 is A
+; return value: in R1 will be (A * 3) + 1
+;
+MUL3ADD1
+; ************************* Start your code here *************************
+AND R1 R0 #0     ; init R1: result
+AND R2 R0 #0     ; init R2: counter
+ADD R1 R1 #1
+ADD R2 R2 #3
+M1LOOP
+	BRz M1Result     ; counter runs to zero, return result
+	ADD R1 R1 R0    ; do multiplication
+	ADD R2 R2 #-1  ; decrease count
+	BRnzp M1LOOP
+
+M1Result RET
+; ************************** End your code here **************************
+
+;
+; STEP 2: DIVIDEBY2
+; *****************
+; Subroutine that calculates N / 2 for even N
+;
+; argument:     in R0 is N, a positive integer
+; return value: in R1 will be N / 2
+;
+DIVIDEBY2
+; ************************* Start your code here *************************
+AND R1 R0 #0  ; counter
+ADD R0 R0 #-2 ; R0 - 2 used to check num >=2 ?
+M2LOOP
+	BRn M2Result       ; check num >=2 ?
+	ADD R1 R1 #1     ; increase count
+	ADD R0 R0 #-2   ; do division
+	BRnzp M2LOOP
+M2Result RET
+; ************************** End your code here **************************
+
+;
+; STEP 3: COLLATZ_STEPS
+; *********************
+; Subroutine to calculate the number of steps to reach 1 from number N
+;
+; argument:     in R0 is N, a positive integer
+; return value: in R1 will be the required number of steps
+;
+COLLATZ_STEPS
+; ************************* Start your code here *************************
+; save register right before making the call
+ST R0 SaveR0
+ST R2 SaveR2
+ST R3 SaveR3
+ST R4 SaveR4
+ST R7 SaveR7
+
+; initialize vars
+AND R1 R0 #0  ;temp var
+AND R2 R0 #0  ; N==1?
+AND R3 R0 #0  ; N E/O?
+AND R4 R0 #0  ; # of steps
+
+; if N==1, return counter
+; if N==even, divide N by 2
+; if N==odd>1, mult 3 add 1
+LOOP ADD R2 R0 #-1 ; check N==1?
+	BRz DONE
+	AND R3 R0 #1 ; E/O
+	BRz EVEN
+	BRp ODD
+
+; n==even, do divide by 2
+EVEN JSR DIVIDEBY2
+	ADD R0 R1 #0
+	AND R1 R0 #0
+	ADD R4 R4 #1 ; count +1
+	BRnzp LOOP
+
+; n==odd>1, do mult 3+1
+ODD JSR MUL3ADD1
+	ADD R0 R1 #0
+	AND R1 R0 #0
+	ADD R4 R4 #1 ; count +1
+	BRnzp LOOP
+
+; n==1, done
+DONE 
+	ADD R1 R4 #0
+	
+; restore register before returning
+LD R0 SaveR0
+LD R2 SaveR2
+LD R3 SaveR3
+LD R4 SaveR4
+LD R7 SaveR7
+RET
+
+; addr used to preserve registers
+SaveR0 .FILL #0
+SaveR2 .FILL #1
+SaveR3 .FILL #2
+SaveR4 .FILL #3
+SaveR7 .FILL #4
+
+; ************************** End your code here **************************
+
+; ************************************************************************
+; *************** DO NOT MODIFY ANYTHING BELOW THIS LINE *****************
+; ************************************************************************
+
+; You should NOT directly use INIT_REG_VAL1, INIT_REG_VAL2, INIT_REG_VAL3,
+; INIT_REG_VAL_NEG1, INIT_REG_VAL_NEG2, INIT_REG_VAL_NEG3, or their values 
+; in your code.
+;
+; You'll lose ALL points for callee saving if you do so
+
+;
+; MAIN SECTION
+; ************
+; DO NOT REMOVE OR MODIFY ANYTHING IN THE MAIN SECTION BELOW
+
+
+; ************************************************************************
+;                           Helper Code + Test Bench
+; ************************************************************************
+
+; ************************ Provided Helper Functions *********************
+
+; Use the following subroutines to help check and debug your implementation
+
+; 1. PRINT_DIGIT
+; 2. PRINT_INT
+; 3. COLLATZ
+; ************************************************************************
+
+;
+; PRINT_DIGIT
+; *******************
+; Prints a single-digit integer N, where N is between 0 and 9
+;
+; arguments:    in R0 is N
+;
+PRINT_DIGIT
+; ************************************************************************
+    ST R0, PRINT_DIGIT_R0
+    ST R1, PRINT_DIGIT_R1
+    ST R7, PRINT_DIGIT_R7
+
+    LD R1, ASCII_ZERO
+    ADD R0, R0, R1
+    OUT
+
+    LD R0, PRINT_DIGIT_R0
+    LD R1, PRINT_DIGIT_R1
+    LD R7, PRINT_DIGIT_R7
+
+    RET
+
+    PRINT_DIGIT_R0 .FILL x0000
+    PRINT_DIGIT_R1 .FILL x0000
+    PRINT_DIGIT_R7 .FILL x0000
+    ASCII_ZERO .FILL x0030
+; ************************************************************************
+
+;
+; PRINT_INT
+; *****************
+; Prints a two-digit integer N followed by a new line character (x000A).
+; N is between 0 and 99. For N < 10, the leading 0 is printed.
+;
+; This subroutine must calls PRINT_DIGIT to print a single digit.
+;
+; arguments:    in R0 is N
+
+PRINT_INT
+; ************************************************************************
+    ST R0, PRINT_INT_R0
+    ST R1, PRINT_INT_R1
+    ST R2, PRINT_INT_R2
+    ST R7, PRINT_INT_R7
+
+    AND R1, R1, #0 
+
+    SUBTRACT_TEN
+    ADD R0, R0, #-10
+    BRn SUBTRACT_TEN_END
+    ADD R1, R1, #1
+    BR SUBTRACT_TEN
+
+    SUBTRACT_TEN_END
+    ADD R2, R0, #10
+
+    AND R0, R1, R1
+    JSR PRINT_DIGIT
+    AND R0, R2, R2
+    JSR PRINT_DIGIT
+    LD R0, NEW_LINE
+    OUT
+
+    LD R0, PRINT_INT_R0
+    LD R1, PRINT_INT_R1
+    LD R2, PRINT_INT_R2
+    LD R7, PRINT_INT_R7
+
+    RET
+
+    PRINT_INT_R0 .FILL x0000
+    PRINT_INT_R1 .FILL x0000
+    PRINT_INT_R2 .FILL x0000
+    PRINT_INT_R7 .FILL x0000
+    NEW_LINE .FILL x000A
+; ************************************************************************
+
+;
+; COLLATZ
+; *************
+; Subroutine that prints the Collatz steps taken for N to 1
+; Uses the COLLATZ_STEPS subroutine to calculate the number of steps
+;
+; argument:     in R0 is N, a positive integer
+;
+COLLATZ
+; ************************************************************************
+    ST R0, COLLATZ_R0
+    ST R2, COLLATZ_R2
+    ST R7, COLLATZ_R7
+
+    AND R0, R0, R0
+
+    ; Loop runs from N to 1
+    LOOP_CONDITION
+    ; Run the loop while R0 >= 1
+    BRnz COLLATZ_LOOP_END
+
+    JSR COLLATZ_STEPS
+
+    ADD R2, R0, #0
+    ADD R0, R1, #0
+
+    JSR PRINT_INT
+
+    ADD R0, R2, #0
+    
+    ; Decrement number
+    ADD R0, R0, #-1
+
+    BRnzp LOOP_CONDITION
+    COLLATZ_LOOP_END
+
+    LD R0, COLLATZ_R0
+    LD R2, COLLATZ_R2
+    LD R7, COLLATZ_R7
+
+    RET
+
+    COLLATZ_R0 .FILL x0000
+    COLLATZ_R2 .FILL x0000
+    COLLATZ_R7 .FILL x0000
+; ************************************************************************
+
+TEST_BEGIN
+
+;
+; *********************** TEST FOR MUL3ADD1 ******************************
+;
+    ; initialize the registers for checking callee saving
+    LD R2, INIT_REG_VAL1
+    LD R3, INIT_REG_VAL1
+    LD R4, INIT_REG_VAL1
+    LD R5, INIT_REG_VAL1
+    LD R6, INIT_REG_VAL1
+
+    ; print the message
+    LEA R0, MUL3ADD1_MSG
+    PUTS
+
+    ; test the MUL3ADD1 subroutine to multiply a number with 3 and add 1
+    AND R0, R0, #0
+    LD R1, MUL3ADD1_N
+    ADD R0, R0, R1        ; initialize the operand to 32
+    JSR MUL3ADD1          ; calculate and store the result in R1
+    AND R0, R1, R1        ; move the result of MUL from R1 to R0
+    JSR PRINT_INT         ; print the value in R0
+
+    ; check if the original values in the registers are preserved
+    LD R0, INIT_REG_VAL_NEG1
+    ADD R3, R3, R0
+    BRnp MUL3ADD1_REG_SAVING_FAILED
+    ADD R4, R4, R0
+    BRnp MUL3ADD1_REG_SAVING_FAILED
+    ADD R5, R5, R0
+    BRnp MUL3ADD1_REG_SAVING_FAILED
+    ADD R6, R6, R0
+    BRnp MUL3ADD1_REG_SAVING_FAILED
+
+    BRnzp TEST_MUL3ADD1_END
+
+MUL3ADD1_REG_SAVING_FAILED
+    LEA R0, MUL3ADD1_REG_SAVING_MSG
+    PUTS
+    BRnzp TEST_MUL3ADD1_END
+
+    MUL3ADD1_MSG     .STRINGZ "\n32 * 3 + 1 = "
+    MUL3ADD1_REG_SAVING_MSG   .STRINGZ "\nCheck for callee saving failed!\n"
+    INIT_REG_VAL1     .FILL    x600D     ; DO NOT USE THIS LABEL/VALUE
+    INIT_REG_VAL_NEG1 .FILL    #-24589   ; DO NOT USE THIS LABEL/VALUE
+    MUL3ADD1_N        .FILL    #32       ; DO NOT USE THIS LABEL/VALUE
+
+TEST_MUL3ADD1_END
+; ************************************************************************
+
+;
+; ********************* TEST FOR DIVIDEBY2 *******************************
+;
+    ; initialize the registers for checking callee saving
+    LD R2, INIT_REG_VAL2
+    LD R3, INIT_REG_VAL2
+    LD R4, INIT_REG_VAL2
+    LD R5, INIT_REG_VAL2
+    LD R6, INIT_REG_VAL2
+
+    ; print the message
+    LEA R0, DIVIDEBY2_MSG
+    PUTS
+
+    ; test the DIVIDEBY2 subroutine to Divide a number by 2
+    AND R0, R0, #0
+    LD R1, DIVIDEBY2_N     ; load operand value from memory
+    ADD R0, R0, R1         ; initialize the operand
+    JSR DIVIDEBY2          ; divide and store the result in R1
+    AND R0, R1, R1         ; move the result of DIVIDEBY2 from R1 to R0
+    JSR PRINT_INT          ; print the value in R0
+
+    ; check if the original values in the registers are preserved
+    LD R0, INIT_REG_VAL_NEG2
+    ADD R2, R2, R0
+    BRnp DIVIDEBY2_REG_SAVING_FAILED
+    ADD R3, R3, R0
+    BRnp DIVIDEBY2_REG_SAVING_FAILED
+    ADD R4, R4, R0
+    BRnp DIVIDEBY2_REG_SAVING_FAILED
+    ADD R5, R5, R0
+    BRnp DIVIDEBY2_REG_SAVING_FAILED
+    ADD R6, R6, R0
+    BRnp DIVIDEBY2_REG_SAVING_FAILED
+
+    BRnzp TEST_DIVIDEBY2_END
+
+DIVIDEBY2_REG_SAVING_FAILED
+    LEA R0, DIVIDEBY2_REG_SAVING_MSG
+    PUTS
+    BRnzp TEST_DIVIDEBY2_END
+
+    DIVIDEBY2_MSG    .STRINGZ "\n196 /  2 = "
+    DIVIDEBY2_REG_SAVING_MSG .STRINGZ "\nCheck for callee saving failed!\n"
+    INIT_REG_VAL2     .FILL    x600D     ; DO NOT USE THIS LABEL/VALUE
+    INIT_REG_VAL_NEG2 .FILL    #-24589   ; DO NOT USE THIS LABEL/VALUE
+    DIVIDEBY2_N       .FILL    #196       ; DO NOT USE THIS LABEL/VALUE
+
+TEST_DIVIDEBY2_END
+; ************************************************************************
+
+;
+; ************************* TEST FOR COLLATZ_STEPS ***********************
+;
+    ; initialize the registers for checking callee saving
+    LD R2, INIT_REG_VAL3
+    LD R3, INIT_REG_VAL3
+    LD R4, INIT_REG_VAL3
+    LD R5, INIT_REG_VAL3
+    LD R6, INIT_REG_VAL3
+
+    ; print the message
+    LEA R0, COLLATZ_STEPS_MSG
+    PUTS
+
+    AND R0, R0, #0
+    LD R1, COLLATZ_STEPS_N  ; load operand from memory (= 1982)
+    ADD R0, R0, R1          ; initialize the operand 
+    JSR COLLATZ_STEPS       ; calculate & store the number of steps in R1
+    AND R0, R1, R1          ; move the result of COLLATZ_STEPS: R1 -> R0
+    JSR PRINT_INT           ; print the value in R0
+
+    ; check if the original values in the registers are preserved
+    LD R0, INIT_REG_VAL_NEG3
+    ADD R2, R2, R0
+    BRnp COLLATZ_STEPS_REG_SAVING_FAILED
+    ADD R3, R3, R0
+    BRnp COLLATZ_STEPS_REG_SAVING_FAILED
+    ADD R4, R4, R0
+    BRnp COLLATZ_STEPS_REG_SAVING_FAILED
+    ADD R5, R5, R0
+    BRnp COLLATZ_STEPS_REG_SAVING_FAILED
+    ADD R6, R6, R0
+    BRnp COLLATZ_STEPS_REG_SAVING_FAILED
+
+    BRnzp TEST_COLLATZ_STEPS_END
+
+COLLATZ_STEPS_REG_SAVING_FAILED
+    LEA R0, COLLATZ_STEPS_REG_SAVING_MSG
+    PUTS
+    BRnzp TEST_COLLATZ_STEPS_END
+
+    COLLATZ_STEPS_MSG .STRINGZ "\nSteps for reaching 1 from 1982 = "
+    COLLATZ_STEPS_REG_SAVING_MSG .STRINGZ "\nCheck for callee saving failed!\n"
+    INIT_REG_VAL3     .FILL    x600D     ; DO NOT USE
+    INIT_REG_VAL_NEG3 .FILL    #-24589   ; DO NOT USE
+    COLLATZ_STEPS_N   .FILL    #1982     ; DO NOT USE
+TEST_COLLATZ_STEPS_END
+; *************************************************************************
+
+; *********************** USING COLLATZ **********************************
+    LEA R0, COLLATZ_MSG
+    PUTS
+
+    LD R0, COLLATZ_N
+    JSR COLLATZ
+
+    BRnzp COLLATZ_EXEC_END
+
+COLLATZ_N   .FILL    #15     ; DO NOT USE THIS LABEL/VALUE
+COLLATZ_MSG .STRINGZ "\nNumber of Collatz Steps for 15, 14, 13, ..., 1\n"
+COLLATZ_EXEC_END
+; **********************************************************************
+
+TEST_END
+    HALT                   ; stop the program execution
+
+.END
